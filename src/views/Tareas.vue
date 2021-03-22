@@ -21,6 +21,7 @@
     </div>
 </template>
 <script>
+import axios from "axios";
 import Header from  '../components/Header';
 export default {
     name:'Tareas',
@@ -35,7 +36,24 @@ export default {
                 { text: 'Fecha', value: 'created_at' },
                 { text: 'Acciones', value: 'actions', sortable: false },
             ],
-            items:[]
+            items:[],
+            access_token: ''
+        }
+    },
+    created() {
+        this.access_token = localStorage.getItem('access_token');
+        if(localStorage.getItem('access_token') != null){
+            this.access_token = JSON.parse(localStorage.getItem('access_token'));
+            this.getHistorial();            
+        }        
+    },
+    methods:{
+        getHistorial(){
+            axios.get("http://localhost:8000/api/tasks/my/"+this.$route.params.id, { headers: {"Authorization" : `Bearer ${this.access_token}`} }).then((result) => {
+                if(result.data.success == 1){
+                    this.items = result.data.data;                   
+                }
+            })
         }
     }
 }

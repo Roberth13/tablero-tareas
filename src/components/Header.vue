@@ -2,7 +2,7 @@
     <div>
         <v-row>
             <v-col cols="12" md="3" sm="3" class="text-left">
-                <v-select :items="misProyectos" dense outlined hint="Mis proyectos" persistent-hint></v-select>
+                <v-select v-model="proyecto" :items="misProyectos" item-text="projectName" item-value="id" dense outlined hint="Mis proyectos" persistent-hint></v-select>
             </v-col>
             <v-col cols="12" md="9" sm="9" class="text-right">
                 <v-btn
@@ -42,7 +42,7 @@
                     dark
                     color="success"
                     class="mr-2"
-                    @click="dialogTarea = true"
+                    @click="crearTarea"
                     >
                     <v-icon dark>
                         mdi-plus
@@ -97,9 +97,11 @@
                 </v-dialog>
             </v-col>
         </v-row>
+        <v-snackbar v-model="snack" :color="color_snack">{{ mensaje }}</v-snackbar>
     </div>
 </template>
 <script>
+import axios from "axios";
 export default {
     name:'Header',
     data(){
@@ -108,33 +110,87 @@ export default {
             titulo: '',
             comentario: '',
             valid: false,
-            misProyectos: []
+            misProyectos: [],
+            access_token: '',
+            proyecto: '',
+            noProyecto: true,
+            color_snack: 'success',
+            mensaje: '',
+            snack: false,
         }
     },
     methods:{
         historial(){
-            this.$router.push({
-                path: 'historial'
-            })
+            if(!this.noProyecto){
+                this.$router.push({
+                    name: 'historial',
+                    params: { id: this.proyecto }
+                })
+            }else{
+                this.mostrarSnack('La compañia aún no ha registrado proyectos', 'warning');
+            }
         },
         dashboard(){
             this.$router.push({
-                path: 'dashboard'
+                name: 'dashboard'
             })
+        },
+        crearTarea(){
+            if(!this.noProyecto){
+                this.dialogTarea = true
+            }else{
+                this.mostrarSnack('La compañia aún no ha registrado proyectos', 'warning');
+            }
+            
         },
         tareas(){
-            this.$router.push({
-                path: 'tareas'
-            })
+            if(!this.noProyecto){
+                this.$router.push({
+                    name: 'tareas',
+                    params: { id: this.proyecto }
+                })
+            }else{
+                this.mostrarSnack('La compañia aún no ha registrado proyectos', 'warning');
+            }
+            
         },
         salir(){
+            localStorage.removeItem('access_token');
             this.$router.push({
                 path: '/'
             })
         },
         crear(){
 
+        },
+        getProjects(){
+            axios.get("http://localhost:8000/api/projects", { headers: {"Authorization" : `Bearer ${this.access_token}`} }).then((result) => {
+                if(result.data.success == 1){
+                    this.misProyectos = result.data.data;
+                    if(this.misProyectos.length > 0){
+                        let _sel = this.misProyectos.slice(0, 1);
+                        this.proyecto = _sel[0].id;
+                        this.noProyecto = false;
+                    }
+                   
+                }
+            })
+        },
+        mostrarSnack(mensaje, color){
+            this.mensaje = mensaje;
+            this.snack = true;
+            this.color_snack = color;
+            setTimeout(() =>{
+                this.snack = false;
+            }, 3000);
         }
+    },
+    created() {
+        this.access_token = localStorage.getItem('access_token');
+        if(localStorage.getItem('access_token') != null){
+            this.access_token = JSON.parse(localStorage.getItem('access_token'));
+            this.getProjects();            
+        }        
     }
 }
 </script>

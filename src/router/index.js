@@ -7,22 +7,22 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    name: 'Login',
+    name: 'login',
     component: Login
   },
   {
     path: '/dashboard',
-    name: 'Dashboard',
+    name: 'dashboard',
     component: () => import('../views/Dashboard')
   },
   {
-    path: '/historial',
-    name: 'Historial',
+    path: '/historial/:id',
+    name: 'historial',
     component: () => import('../views/Historial')
   },
   {
-    path: '/tareas',
-    name: 'Tareas',
+    path: '/tareas/:id',
+    name: 'tareas',
     component: () => import('../views/Tareas')
   }
 ]

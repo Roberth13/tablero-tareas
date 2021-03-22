@@ -54,6 +54,7 @@
 </template>
 <script>
 import Header from '../components/Header';
+import axios from "axios";
 export default {
     name:'Dashboard',
     components:{
@@ -73,7 +74,36 @@ export default {
                 correo: '',
                 fechaReg: ''
             },
-            misProyectos:[]
+            misProyectos:[],
+            access_token: ''
+        }
+    },
+    created(){
+        this.access_token = localStorage.getItem('access_token');
+        if(localStorage.getItem('access_token') != null){
+            this.access_token = JSON.parse(localStorage.getItem('access_token'));
+            this.getUserCurrent();
+        }else{
+            this.$router.push({
+                path: '/'
+            });
+        }
+    },
+    methods:{
+        getUserCurrent(){
+            axios.get("http://localhost:8000/api/user", { headers: {"Authorization" : `Bearer ${this.access_token}`} }).then((result) => {
+                if(result.data.success == 1){
+                   let _data = result.data.data;
+                    this.comp.nombre = _data.company;
+                    this.comp.direccion = _data.address;
+                    this.comp.nit = _data.nit;
+                    this.comp.telefono = _data.phone;
+                    this.comp.correo = _data.emailC;
+                    this.perfil.nombre = _data.name;
+                    this.perfil.correo = _data.email;
+                    this.perfil.fechaReg = _data.created_at;
+                }
+            })
         }
     }
 }
