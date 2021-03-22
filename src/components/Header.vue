@@ -161,7 +161,21 @@ export default {
             })
         },
         crear(){
-
+            if(this.valid){
+                let data = {
+                    project_id: this.proyecto,
+                    state_id: 1,
+                    title: this.titulo,
+                    comment: this.comentario
+                };
+                axios.post("http://localhost:8000/api/tasks", data, { headers: {"Authorization" : `Bearer ${this.access_token}`} }).then((result) => {
+                    if(result.data.success == 1){
+                        this.mostrarSnack('Tarea creada con éxito', 'success');
+                        this.dialogTarea = false;
+                        this.tareas();
+                    }
+                })
+            }
         },
         getProjects(){
             axios.get("http://localhost:8000/api/projects", { headers: {"Authorization" : `Bearer ${this.access_token}`} }).then((result) => {
